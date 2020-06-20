@@ -4,9 +4,6 @@
     "strict": true,
     "module": "es2020",
     "moduleResolution": "node",
-    "allowSyntheticDefaultImports": true,
-    "typeRoots": [
-      "./pkg/"
-    ]
+    "allowSyntheticDefaultImports": true
   }
 }
