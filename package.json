@@ -3,16 +3,28 @@
   "name": "rustaba",
   "version": "0.1.0",
   "scripts": {
-    "build": "rimraf dist pkg && webpack && docker build -t rustaba .",
     "start": "rimraf dist pkg && webpack-dev-server --open -d",
-    "test": "docker rm -f rustaba && docker run -p 8081:80 --name rustaba rustaba"
+    "dev": "rimraf dist pkg && webpack-dev-server --env.dev --open -d",
+    "build": "rimraf dist pkg && webpack --env.prod && docker build -t rustaba .",
+    "deploy": "docker rm -f rustaba && docker run -p 8081:80 --name rustaba rustaba"
+  },
+  "dependencies": {
+    "vue": "^3.0.0-beta.2"
   },
   "devDependencies": {
+    "@vue/compiler-sfc": "^3.0.0-beta.2",
     "@wasm-tool/wasm-pack-plugin": "^1.1.0",
     "copy-webpack-plugin": "^5.0.3",
+    "css-loader": "^3.4.2",
+    "file-loader": "^6.0.0",
+    "mini-css-extract-plugin": "^0.9.0",
+    "rimraf": "^3.0.0",
+    "ts-loader": "^7.0.5",
+    "typescript": "^3.9.5",
+    "url-loader": "^4.0.0",
+    "vue-loader": "^16.0.0-alpha.3",
     "webpack": "^4.42.0",
     "webpack-cli": "^3.3.3",
-    "webpack-dev-server": "^3.7.1",
-    "rimraf": "^3.0.0"
+    "webpack-dev-server": "^3.7.1"
   }
 }
