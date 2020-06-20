@@ -1,6 +1,6 @@
 # Rustaba
 
-🦀 Rust + 🕸 Wasm + 🌱Futaba = Rustaba
+🦀 Rust + 🕸 Wasm + 🌱 Futaba = 🦞 Rustaba
 
 ## インストール
 
@@ -12,11 +12,11 @@ npm install
 
 ```sh
 # プロジェクトをデバッグモードでビルドし、新しいタブで開く（ホットリロード）。
-npm start
+npm run dev
 
 # Wasmのみリリースモードでビルドして、残りのコードをデバッグします。
 # デバッグモードは実行速度が非常に低速なので、通常はこちらを実行します。
-npm run dev
+npm start
 ```
 
 ## ビルドする
