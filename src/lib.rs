@@ -28,7 +28,7 @@ pub fn main_js() -> Result<(), JsValue> {
 }
 
 #[wasm_bindgen]
-pub fn test(fragment: &str) -> String {
+pub fn parse(fragment: &str) -> String {
     #[cfg(debug_assertions)]
     console_error_panic_hook::set_once();
 

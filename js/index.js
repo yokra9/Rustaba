@@ -2,8 +2,8 @@ import("../pkg/index.js").catch(console.error);
 
 async function t() {
     const wasm = await import("../pkg/");
-    return wasm.test(`
-
+    return wasm.parse(`
+      
    
     `)
 }

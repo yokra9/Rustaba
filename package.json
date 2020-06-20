@@ -3,9 +3,9 @@
   "name": "rustaba",
   "version": "0.1.0",
   "scripts": {
-    "build": "rimraf dist pkg && webpack && docker build -t test .",
+    "build": "rimraf dist pkg && webpack && docker build -t rustaba .",
     "start": "rimraf dist pkg && webpack-dev-server --open -d",
-    "test": "cargo test && wasm-pack test --headless"
+    "test": "docker rm -f rustaba && docker run -p 8081:80 --name rustaba rustaba"
   },
   "devDependencies": {
     "@wasm-tool/wasm-pack-plugin": "^1.1.0",
