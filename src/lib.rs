@@ -1,10 +1,8 @@
 use wasm_bindgen::prelude::*;
-use web_sys::console;
 
 use regex::Regex;
 use scraper::{Html, Selector};
 use serde::{Deserialize, Serialize};
-
 // When the `wee_alloc` feature is enabled, this uses `wee_alloc` as the global
 // allocator.
 //
@@ -13,23 +11,11 @@ use serde::{Deserialize, Serialize};
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
-// This is like the `main` function, except for JavaScript.
-#[wasm_bindgen(start)]
-pub fn main_js() -> Result<(), JsValue> {
-    // This provides better error messages in debug mode.
-    // It's disabled in release mode so it doesn't bloat up the file size.
-    #[cfg(debug_assertions)]
-    console_error_panic_hook::set_once();
-
-    // Your code goes here!
-    console::log_1(&JsValue::from_str("Hello world!"));
-
-    Ok(())
-}
-
 #[wasm_bindgen]
 pub fn parse(fragment: &str) -> String {
-    #[cfg(debug_assertions)]
+    // This provides better error messages in debug mode.
+    // It's disabled in release mode so it doesn't bloat up the file size.
+    #[cfg(feature = "console_error_panic_hook")]
     console_error_panic_hook::set_once();
 
     let fragment = Html::parse_fragment(fragment);
@@ -37,7 +23,7 @@ pub fn parse(fragment: &str) -> String {
     let mut v: Vec<Contribution> = Vec::new();
 
     let image = match fragment
-        .select(&Selector::parse(".thre>a>img").unwrap())
+        .select(&Selector::parse(".thre>a>img").expect("ダヨー"))
         .next()
     {
         Some(expr) => expr.value().attr("src").unwrap().to_string(),

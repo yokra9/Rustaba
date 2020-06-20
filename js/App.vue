@@ -1,32 +1,33 @@
 <template>
-  <img src="./logo.png">
-  <h1>Hello Vue 3!</h1>
-  <button @click="inc">Clicked {{ count }} times.</button>
+  <pre>{{ tmp }}</pre>
 </template>
 
 <script lang="ts">
-import { ref, defineComponent } from 'vue'
+import { ref, defineComponent } from "vue";
+import axios from "axios";
 
 export default defineComponent({
   setup() {
-    const count = ref(0)
-    const inc = () => {
-      count.value++
-    }
+    const http = axios.create({
+      baseURL: "http://" + location.host
+    });
+
+    const tmp = ref<String>();
+    http.get("/sample3.html").then(res => {
+      import("../pkg/index.js")
+        .then(wasm => {
+          const json = wasm.parse(res.data);
+          tmp.value = JSON.parse(json);
+        })
+        .catch(console.error);
+    });
 
     return {
-      count,
-      inc
-    }
+      tmp
+    };
   }
-})
+});
 </script>
 
 <style scoped>
-img {
-  width: 200px;
-}
-h1 {
-  font-family: Arial, Helvetica, sans-serif;
-}
 </style>
