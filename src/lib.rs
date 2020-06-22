@@ -23,7 +23,7 @@ pub fn parse(fragment: &str) -> String {
     let mut v: Vec<Contribution> = Vec::new();
 
     let image = match fragment
-        .select(&Selector::parse(".thre>a>img").expect("ダヨー"))
+        .select(&Selector::parse(".thre>a>img").unwrap())
         .next()
     {
         Some(expr) => expr.value().attr("src").unwrap().to_string(),
@@ -98,7 +98,24 @@ pub fn parse(fragment: &str) -> String {
     for table in fragment.select(&Selector::parse("table").unwrap()) {
         // blockquoteタグがあればinnerHtmlを取り出す
         let quote = match table.select(&Selector::parse("blockquote").unwrap()).next() {
-            Some(expr) => expr.inner_html(),
+            Some(expr) => {
+                let mut quote = expr.inner_html();
+                quote = Regex::new(r"su\d{7}.(jpg|gif|png)")
+                    .unwrap()
+                    .replace_all(
+                        &quote,
+                        "$0 <img src='http://www.nijibox5.com/futabafiles/tubu/src/$0' />",
+                    )
+                    .to_string();
+                quote = Regex::new(r"su\d{7}.mp4")
+                    .unwrap()
+                    .replace_all(
+                        &quote,
+                        "$0 <video src='http://www.nijibox5.com/futabafiles/tubu/src/$0' />",
+                    )
+                    .to_string();
+                quote
+            }
             None => continue, // なければスキップ
         };
 
