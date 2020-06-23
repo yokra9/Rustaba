@@ -12,7 +12,7 @@ use serde::{Deserialize, Serialize};
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 #[wasm_bindgen]
-pub fn parse(fragment: &str) -> String {
+pub fn parse(fragment: &str, base_url: &str) -> String {
     // This provides better error messages in debug mode.
     // It's disabled in release mode so it doesn't bloat up the file size.
     #[cfg(feature = "console_error_panic_hook")]
@@ -22,19 +22,46 @@ pub fn parse(fragment: &str) -> String {
 
     let mut v: Vec<Contribution> = Vec::new();
 
-    let image = match fragment
+    let mut images: Vec<String> = Vec::new();
+
+    let tubu_i = Regex::new(r"su\d{7}\.(jpg|gif|png)").unwrap();
+    let tubu = Regex::new(r"su\d{7}\.[[:alnum:]]{1,5}").unwrap();
+
+    match fragment
         .select(&Selector::parse(".thre>a>img").unwrap())
         .next()
     {
-        Some(expr) => expr.value().attr("src").unwrap().to_string(),
-        None => "".to_string(),
+        Some(expr) => images.push(format!(
+            "{}{}",
+            base_url.to_string(),
+            expr.value().attr("src").unwrap()
+        )),
+        None => (),
     };
 
     let quote = match fragment
         .select(&Selector::parse(".thre>blockquote").unwrap())
         .next()
     {
-        Some(expr) => expr.inner_html(),
+        Some(expr) => {
+            let mut quote = expr.inner_html();
+
+            for cap in tubu_i.captures_iter(&quote) {
+                images.push(format!(
+                    "{}{}",
+                    "http://www.nijibox5.com/futabafiles/tubu/src/".to_string(),
+                    &cap[0]
+                ));
+            }
+
+            quote = tubu
+                .replace_all(
+                    &quote,
+                    "<a href='http://www.nijibox5.com/futabafiles/tubu/src/$0'>$0</a>",
+                )
+                .to_string();
+            quote
+        }
         None => "".to_string(),
     };
 
@@ -86,7 +113,7 @@ pub fn parse(fragment: &str) -> String {
 
     v.push(Contribution {
         quote,
-        image,
+        images,
         name,
         title,
         id,
@@ -96,32 +123,38 @@ pub fn parse(fragment: &str) -> String {
 
     // tableタグを走査
     for table in fragment.select(&Selector::parse("table").unwrap()) {
-        // blockquoteタグがあればinnerHtmlを取り出す
+        let mut images: Vec<String> = Vec::new();
+
+        match table.select(&Selector::parse("img").unwrap()).next() {
+            Some(expr) => images.push(format!(
+                "{}{}",
+                base_url.to_string(),
+                expr.value().attr("src").unwrap()
+            )),
+            None => (),
+        };
+
         let quote = match table.select(&Selector::parse("blockquote").unwrap()).next() {
             Some(expr) => {
                 let mut quote = expr.inner_html();
-                quote = Regex::new(r"su\d{7}.(jpg|gif|png)")
-                    .unwrap()
+
+                for cap in tubu_i.captures_iter(&quote) {
+                    images.push(format!(
+                        "{}{}",
+                        "http://www.nijibox5.com/futabafiles/tubu/src/".to_string(),
+                        &cap[0]
+                    ));
+                }
+
+                quote = tubu
                     .replace_all(
                         &quote,
-                        "$0 <img src='http://www.nijibox5.com/futabafiles/tubu/src/$0' />",
-                    )
-                    .to_string();
-                quote = Regex::new(r"su\d{7}.mp4")
-                    .unwrap()
-                    .replace_all(
-                        &quote,
-                        "$0 <video src='http://www.nijibox5.com/futabafiles/tubu/src/$0' />",
+                        "<a href='http://www.nijibox5.com/futabafiles/tubu/src/$0'>$0</a>",
                     )
                     .to_string();
                 quote
             }
             None => continue, // なければスキップ
-        };
-
-        let image = match table.select(&Selector::parse("img").unwrap()).next() {
-            Some(expr) => expr.value().attr("src").unwrap().to_string(),
-            None => "".to_string(),
         };
 
         let name = match table.select(&Selector::parse(".cnm").unwrap()).next() {
@@ -160,7 +193,7 @@ pub fn parse(fragment: &str) -> String {
 
         v.push(Contribution {
             quote,
-            image,
+            images,
             name,
             title,
             sod,
@@ -177,7 +210,7 @@ pub fn parse(fragment: &str) -> String {
 #[derive(Serialize, Deserialize, Debug)]
 struct Contribution {
     quote: String,
-    image: String,
+    images: Vec<String>,
     name: String,
     title: String,
     id: String,

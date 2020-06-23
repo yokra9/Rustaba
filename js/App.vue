@@ -9,7 +9,7 @@
   <div v-for="(c,i) in contributions" :key="c.quote">
     <span>{{i}} {{c.title}} {{c.name}} {{c.date}}</span>
     <div v-html="c.quote" />
-    <img v-if="c.image!==''" :src="baseURL + c.image" />
+    <img v-for="j in c.images" :src="j" />
   </div>
 </template>
 
@@ -26,11 +26,13 @@ export default defineComponent({
 
     const getThread = () => {
       axios
-        .get(["b", "res", num.value + ".htm"].join("/"), { baseURL: baseURL.value })
+        .get(["b", "res", num.value + ".htm"].join("/"), {
+          baseURL: baseURL.value
+        })
         .then(res => {
           import("../pkg/index.js")
             .then(wasm => {
-              const json = wasm.parse(res.data);
+              const json = wasm.parse(res.data, baseURL.value);
               contributions.value = Object.assign(
                 {},
                 JSON.parse(json).contributions,
