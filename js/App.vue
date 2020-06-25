@@ -7,7 +7,7 @@
   </select>
   <input type="button" value="表示" @click="getThread" />
   <div v-for="(c,i) in contributions" :key="c.quote">
-    <span>{{i}} {{c.title}} {{c.name}} {{c.date}}</span>
+    <span>{{i}} {{c.title}} {{c.name}} {{c.date}} {{c.id}}</span>
     <div v-html="c.quote" />
     <img v-for="j in c.images" :src="j" />
   </div>

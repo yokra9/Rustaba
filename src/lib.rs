@@ -20,12 +20,12 @@ pub fn parse(fragment: &str, base_url: &str) -> String {
 
     let fragment = Html::parse_fragment(fragment);
 
-    let mut v: Vec<Contribution> = Vec::new();
-
-    let mut images: Vec<String> = Vec::new();
-
+    //正規表現のコンパイルはコストがかかるのでループ外で行う
     let tubu_i = Regex::new(r"su\d{7}\.(jpg|gif|png)").unwrap();
     let tubu = Regex::new(r"su\d{7}\.[[:alnum:]]{1,5}").unwrap();
+
+    let mut v: Vec<Contribution> = Vec::new();
+    let mut images: Vec<String> = Vec::new();
 
     match fragment
         .select(&Selector::parse(".thre>a>img").unwrap())
@@ -89,25 +89,24 @@ pub fn parse(fragment: &str, base_url: &str) -> String {
         None => "".to_string(),
     };
 
+    // IDは日付の隣に出力される
     let mut id = "".to_string();
     let date = match fragment
         .select(&Selector::parse(".thre>.cnw").unwrap())
         .next()
     {
-        // "ID:.{8}"があったら
-        Some(d) => match Regex::new(r"^(.*)\s(ID:.{8})")
-            .unwrap()
-            .captures(&d.inner_html())
-        {
-            Some(expr) => {
-                // idに代入
-                id = expr.get(2).unwrap().as_str().to_string();
-                // dateにはidより前の部分を代入
-                expr.get(1).unwrap().as_str().to_string()
+        Some(d) => {
+            let date = d.inner_html();
+            match Regex::new(r"^(.*)\s(ID:.{8})").unwrap().captures(&date) {
+                Some(expr) => {
+                    id = expr.get(2).unwrap().as_str().to_string();
+                    // dateにはidより前の部分を代入
+                    expr.get(1).unwrap().as_str().to_string()
+                }
+                // なければそのまま代入
+                None => date,
             }
-            // なければdateにそのまま代入
-            None => d.inner_html(),
-        },
+        }
         None => "".to_string(),
     };
 
@@ -121,7 +120,7 @@ pub fn parse(fragment: &str, base_url: &str) -> String {
         date,
     });
 
-    // tableタグを走査
+    // 返信を走査
     for table in fragment.select(&Selector::parse("table").unwrap()) {
         let mut images: Vec<String> = Vec::new();
 
@@ -154,7 +153,7 @@ pub fn parse(fragment: &str, base_url: &str) -> String {
                     .to_string();
                 quote
             }
-            None => continue, // なければスキップ
+            None => continue, // 返信がなければスキップ
         };
 
         let name = match table.select(&Selector::parse(".cnm").unwrap()).next() {
@@ -172,22 +171,22 @@ pub fn parse(fragment: &str, base_url: &str) -> String {
             None => "".to_string(),
         };
 
+        // IDは日付の隣に出力される
         let mut id = "".to_string();
-        let date = match table.select(&Selector::parse(".cnw").unwrap()).next() {
-            // "ID:.{8}"があったら
-            Some(d) => match Regex::new(r"^(.*)\s(ID:.{8})")
-                .unwrap()
-                .captures(&d.inner_html())
-            {
-                Some(expr) => {
-                    // idに代入
-                    id = expr.get(2).unwrap().as_str().to_string();
-                    // dateにはidより前の部分を代入
-                    expr.get(1).unwrap().as_str().to_string()
+        let date = match fragment.select(&Selector::parse(".cnw").unwrap()).next() {
+            Some(d) => {
+                let date = d.inner_html();
+                match Regex::new(r"^(.*)\s(ID:.{8})").unwrap().captures(&date) {
+                    Some(expr) => {
+                        // idに代入
+                        id = expr.get(2).unwrap().as_str().to_string();
+                        // dateにはidより前の部分を代入
+                        expr.get(1).unwrap().as_str().to_string()
+                    }
+                    // なければそのまま代入
+                    None => date,
                 }
-                // なければdateにそのまま代入
-                None => d.inner_html(),
-            },
+            }
             None => "".to_string(),
         };
 
@@ -209,8 +208,8 @@ pub fn parse(fragment: &str, base_url: &str) -> String {
 
 #[derive(Serialize, Deserialize, Debug)]
 struct Contribution {
-    quote: String,
     images: Vec<String>,
+    quote: String,
     name: String,
     title: String,
     id: String,
