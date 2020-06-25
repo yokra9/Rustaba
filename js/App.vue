@@ -14,37 +14,58 @@
 </template>
 
 <script lang="ts">
-import { ref, computed, defineComponent } from "vue";
+import { ref, defineComponent } from "vue";
 import axios from "axios";
+
+interface Contribution {
+  images: String[];
+  quote: String;
+  name: String;
+  title: String;
+  id: String;
+  sod: String;
+  date: String;
+}
+
+interface Thread {
+  contributions: Contribution[];
+}
 
 export default defineComponent({
   setup() {
-    const baseURL = ref("http://192.168.1.2:8081/mock-img");
+    const baseURL = ref<String>("http://192.168.1.2:8081/mock-img");
 
     const num = ref<Number>();
-    const contributions = ref();
+    const contributions = ref<Contribution[]>();
 
     const getThread = () => {
       axios
         .get(["b", "res", num.value + ".htm"].join("/"), {
-          baseURL: baseURL.value
+          baseURL: baseURL.value.toString()
         })
         .then(res => {
           import("../pkg/index.js")
             .then(wasm => {
-              const json = wasm.parse(res.data, baseURL.value);
-              contributions.value = Object.assign(
-                {},
-                JSON.parse(json).contributions,
-                contributions.value
-              );
+              const json = wasm.parse(res.data, baseURL.value.toString());
+              const thread: Thread = JSON.parse(json);
+              contributions.value = thread.contributions;
             })
             .catch(console.error);
         });
     };
 
     const clearThread = () => {
-      contributions.value = {};
+      contributions.value = [
+        {
+          images: [""],
+          quote: "",
+          name: "",
+          title: "",
+          id: "",
+          sod: "",
+          date: ""
+        }
+      ];
     };
 
     return {
