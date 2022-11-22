@@ -9,7 +9,7 @@
     "deploy": "docker cp dist/. rustaba:/usr/local/apache2/htdocs/ && docker stop rustaba && docker start rustaba"
   },
   "dependencies": {
-    "axios": "^0.21.1",
+    "axios": "^0.21.2",
     "vue": "^3.0.0-beta.2"
   },
   "devDependencies": {
